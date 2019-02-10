@@ -1,0 +1,6 @@
+<div>
+  <label>From Date:
+    <input #dp type="text" [formControl]="fromDate" />
+    <av-datepicker [value]="fromDate.value" (dateChanged)="fromDate.patchValue($event)" [datepickerField]="fromDate"></av-datepicker>
+  </label>
+</div>

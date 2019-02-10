@@ -1,0 +1,31 @@
+@mixin appThemeColor($bgOne, $bgTwo, $color) {
+  background: $bgOne;
+  background: linear-gradient(to right, $bgTwo, $bgOne);
+  color: $color;
+}
+
+@mixin ngu-datepicker-theme-styles($bgOne, $bgTwo, $bgTxtCol) {
+
+  av-datepicker {
+
+    .cal-table .active,
+    .cal-table .cal-body .cal-hover:hover {
+      @include appThemeColor($bgOne, $bgTwo, $bgTxtCol);
+      font-weight: 700;
+    }
+
+    .dp-day div {
+      &.active {
+        @include appThemeColor($bgOne, $bgTwo, $bgTxtCol);
+      }
+
+      &.ranges {
+        @include appThemeColor($bgOne, $bgTwo, $bgTxtCol);
+      }
+
+      &:hover {
+        @include appThemeColor($bgOne, $bgTwo, $bgTxtCol);
+      }
+    }
+  }
+}

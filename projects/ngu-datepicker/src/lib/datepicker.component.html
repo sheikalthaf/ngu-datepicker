@@ -1,0 +1,50 @@
+<div class="pick-container">
+  <div class="date-pick" *ngFor="let daf of (datepicker.days | async)">
+    <div class="dp-header">
+      <span (click)="isMonthTable = true">
+        {{ months[daf.extras.month] }}
+      </span>
+      <span class="cal-year"> {{ daf.extras.year }}</span>
+      <span class="dp-space"></span>
+      <span class="next-btn" (click)="datepicker.button('prev')"><</span>
+      <span class="next-btn" (click)="datepicker.button('next')">></span>
+    </div>
+    <div class="cal-pr">
+      <div class="cal-overlay" *ngIf="isMonthTable">
+        <div
+          *ngFor="let item of months; let i = index"
+          (click)="datepicker.selectMonth(i); isMonthTable = false"
+        >
+          {{ item }}
+        </div>
+      </div>
+      <table class="cal-table">
+        <tbody *ngIf="(datepicker.colors | async) as col">
+          <tr class="cal-head">
+            <td *ngFor="let week of weekDays">{{ week.substr(0, 2) }}</td>
+          </tr>
+          <tr class="cal-body" *ngFor="let row of daf.arr">
+            <ng-container *ngFor="let item of row">
+              <td
+                [dpHover]="item"
+                *ngIf="multi == 1 || item.isCurentMonth; else dpElse"
+                class="cal-hover"
+                [ngClass]="{
+                  isDisabled: !item.isCurentMonth,
+                  active: col.active.includes(item.compare),
+                  dpRed: col.partil.includes(item.compare)
+                }"
+                (click)="datepicker.selectDate(item)"
+              >
+                {{ item.day }}
+              </td>
+              <ng-template #dpElse><td></td></ng-template>
+            </ng-container>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<hr />
+<ng-content></ng-content>

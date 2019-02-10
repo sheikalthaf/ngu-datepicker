@@ -1,0 +1,11 @@
+/* You can add global styles to this file, and also import other style files */
+
+@import '../../ngu-datepicker/src/lib/datepicker-theme';
+
+html body {
+  margin: 0;
+  font-family: 'Lato', sans-serif;
+  font-size: 14px;
+}
+
+@include ngu-datepicker-theme-styles(#bc0b60, #0a4683, #fff);

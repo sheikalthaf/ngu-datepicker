@@ -1,0 +1,23 @@
+language: node_js
+node_js:
+  - '10'
+dist: trusty
+sudo: required
+branches:
+  only:
+    - master
+
+before_script:
+  - yarn global add @angular/cli
+
+script:
+  - ng lint
+  - yarn build
+
+deploy:
+  provider: pages
+  skip_cleanup: true
+  github_token: $GITHUB_TOKEN
+  local_dir: dist/ngu-datepicker
+  on:
+    branch: master

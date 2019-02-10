@@ -17,6 +17,14 @@
     "lib": [
       "es2018",
       "dom"
-    ]
+    ],
+    "paths": {
+      "ngu-datepicker": [
+        "dist/ngu-datepicker"
+      ],
+      "ngu-datepicker/*": [
+        "dist/ngu-datepicker/*"
+      ]
+    }
   }
 }
