@@ -31,9 +31,7 @@
               "projects/ngu-datepicker/tsconfig.lib.json",
               "projects/ngu-datepicker/tsconfig.spec.json"
             ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -61,9 +59,7 @@
               "projects/datepicker-demo/src/favicon.ico",
               "projects/datepicker-demo/src/assets"
             ],
-            "styles": [
-              "projects/datepicker-demo/src/styles.scss"
-            ],
+            "styles": ["projects/datepicker-demo/src/styles.scss"],
             "scripts": [],
             "es5BrowserSupport": true
           },
@@ -84,6 +80,8 @@
               "extractLicenses": true,
               "vendorChunk": false,
               "buildOptimizer": true,
+              "baseHref": "https://sheikalthaf.github.io/ngu-datepicker/",
+              "deployUrl": "https://sheikalthaf.github.io/ngu-datepicker/",
               "budgets": [
                 {
                   "type": "initial",
@@ -118,9 +116,7 @@
             "polyfills": "projects/datepicker-demo/src/polyfills.ts",
             "tsConfig": "projects/datepicker-demo/tsconfig.spec.json",
             "karmaConfig": "projects/datepicker-demo/karma.conf.js",
-            "styles": [
-              "projects/datepicker-demo/src/styles.scss"
-            ],
+            "styles": ["projects/datepicker-demo/src/styles.scss"],
             "scripts": [],
             "assets": [
               "projects/datepicker-demo/src/favicon.ico",
@@ -135,9 +131,7 @@
               "projects/datepicker-demo/tsconfig.app.json",
               "projects/datepicker-demo/tsconfig.spec.json"
             ],
-            "exclude": [
-              "**/node_modules/**"
-            ]
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
@@ -163,9 +157,7 @@
           "builder": "@angular-devkit/build-angular:tslint",
           "options": {
             "tsConfig": "projects/datepicker-demo-e2e/tsconfig.e2e.json",
-            "exclude": [
-              "**/node_modules/**"
-            ]
+            "exclude": ["**/node_modules/**"]
           }
         }
       }
