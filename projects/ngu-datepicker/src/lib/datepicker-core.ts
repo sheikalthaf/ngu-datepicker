@@ -1,6 +1,7 @@
-import * as moment from 'moment';
 import { DpTest, DPColors } from './datepicker.interface';
 import { BehaviorSubject, Observable, Subscription, Subject } from 'rxjs';
+import * as momentImported from 'moment';
+const moment = momentImported;
 
 const LOCAL_COMPARE = 'YYYY-MM-DD';
 
@@ -8,11 +9,11 @@ const LOCAL_COMPARE = 'YYYY-MM-DD';
  * this is store which help to avoid some duplicates in datepicker values
  */
 export class NguCalendarRangeStore {
-  private store: moment.MomentInput[] = [];
+  private store: momentImported.MomentInput[] = [];
   isFull = false;
   isSingle = false;
 
-  add(date: moment.MomentInput) {
+  add(date: momentImported.MomentInput) {
     const d = moment(date);
     if (this.isFull) this.push();
 
@@ -22,15 +23,15 @@ export class NguCalendarRangeStore {
     // return false;
   }
 
-  isPast(date: moment.Moment) {
+  isPast(date: momentImported.Moment) {
     return this.isSingle && moment(this.store[0]).isAfter(date);
   }
 
-  isSame(date: moment.Moment) {
+  isSame(date: momentImported.Moment) {
     return !!this.store.find(e => moment(e).format(LOCAL_COMPARE) === date.format(LOCAL_COMPARE));
   }
 
-  isBefore(date: moment.MomentInput) {
+  isBefore(date: momentImported.MomentInput) {
     return moment(this.store[0]).isBefore(date);
   }
 
@@ -38,7 +39,7 @@ export class NguCalendarRangeStore {
     return this.store.map(e => moment(e).format(LOCAL_COMPARE));
   }
 
-  push(data?: moment.MomentInput | moment.MomentInput[]) {
+  push(data?: momentImported.MomentInput | momentImported.MomentInput[]) {
     if (Array.isArray(data)) this.store = data;
     else if (!data) this.store = [];
     else this.store.push(data);
@@ -82,10 +83,10 @@ export class NguCalendar {
 
   constructor(public calendarStartMonth = moment(), public multi = 1, public range = false) {}
 
-  monthDays(date: moment.MomentInput) {
+  monthDays(date: momentImported.MomentInput) {
     const myMoment = this.moment(date);
     this.calendarStartMonth = myMoment.clone();
-    const arra = Array<moment.Moment>(this.multi)
+    const arra = Array<momentImported.Moment>(this.multi)
       .fill(myMoment)
       .map((d, i) => {
         const clo = d.clone().add(i, 'month');
@@ -101,9 +102,9 @@ export class NguCalendar {
     this.days.next(arra);
   }
 
-  private getWeekDays(start: moment.Moment): DpTest[][] {
+  private getWeekDays(start: momentImported.Moment): DpTest[][] {
     const startDate = start.startOf('month');
-    return Array<moment.Moment>(6)
+    return Array<momentImported.Moment>(6)
       .fill(startDate)
       .map((n, i) => {
         const week = n.clone().add(i, 'weeks');
@@ -117,9 +118,9 @@ export class NguCalendar {
       });
   }
 
-  private getWeek(day: moment.Moment): moment.Moment[] {
+  private getWeek(day: momentImported.Moment): momentImported.Moment[] {
     const sunday = day.clone().startOf('week');
-    return Array<moment.Moment>(7)
+    return Array<momentImported.Moment>(7)
       .fill(sunday)
       .map((c, i) => c.clone().add(i, 'day'));
   }
@@ -130,7 +131,7 @@ export class NguCalendar {
     this.monthDays(myMoment);
   }
 
-  initialValue(data: moment.MomentInput[]) {
+  initialValue(data: momentImported.MomentInput[]) {
     if (typeof data === 'string') data = [data];
     const d = data.map(e => '' + e);
     this.rangeStore.push(d);
@@ -149,17 +150,17 @@ export class NguCalendar {
     this.colors.next(this._dateColors);
   }
 
-  private momentBetweenTwoDays(a: moment.MomentInput, b: moment.MomentInput) {
+  private momentBetweenTwoDays(a: momentImported.MomentInput, b: momentImported.MomentInput) {
     const diff = this.moment(a).diff(this.moment(b), 'days') + 1;
-    return Array<moment.Moment>(diff)
+    return Array<momentImported.Moment>(diff)
       .fill(this.moment(b))
       .map((g, i) => this.moment(g.clone().add(i, 'day')).format(LOCAL_COMPARE));
   }
 
-  chooseDate(num: number, durationType: moment.DurationInputArg2, currentAsEnd = false) {
+  chooseDate(num: number, durationType: momentImported.DurationInputArg2, currentAsEnd = false) {
     const now = this.moment();
-    let start: moment.MomentInput;
-    let end: moment.MomentInput;
+    let start: momentImported.MomentInput;
+    let end: momentImported.MomentInput;
     if (currentAsEnd) {
       end = now;
       start = now.clone().subtract(num, durationType);
@@ -197,7 +198,7 @@ export class NguCalendar {
     );
   }
 
-  onCellHover(date: moment.MomentInput) {
+  onCellHover(date: momentImported.MomentInput) {
     const isFuture = this.rangeStore.isBefore(date);
     const temp = [...this.rangeStore.inLocalFormat(), date] as string[];
     if (isFuture) this.colorDefined(temp, true);
@@ -220,7 +221,7 @@ export class NguCalendar {
     );
   }
 
-  moment(date: moment.MomentInput) {
+  moment(date: momentImported.MomentInput) {
     return moment(date);
   }
 

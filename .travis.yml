@@ -27,6 +27,6 @@ deploy:
   provider: pages
   skip_cleanup: true
   github_token: $GITHUB_TOKEN
-  local_dir: dist/ngu-datepicker
+  local_dir: dist/datepicker-demo
   on:
     branch: master
