@@ -26,9 +26,11 @@ export class DatepickerComponent implements OnInit, AfterViewInit {
 
   @Input() multi = 1;
 
-  @Input() range = false;
+  @Input() format = 'YYYY-MM-DD';
 
-  @Input() value = [''];
+  @Input() range = true;
+
+  @Input() value = [];
 
   @Output() dateChanged = new EventEmitter();
 
@@ -44,6 +46,14 @@ export class DatepickerComponent implements OnInit, AfterViewInit {
 
   buttons = this.datepicker.select;
 
+  buttonsContent: any;
+
+  context = {
+    $implicit: {
+      buttons: this.datepicker.select
+    }
+  };
+
   constructor() {}
 
   ngOnInit() {
@@ -51,8 +61,8 @@ export class DatepickerComponent implements OnInit, AfterViewInit {
     const v = this.range ? val : [val];
     this.datepicker.range = this.range;
     this.datepicker.multi = this.multi;
-    this.datepicker.colorDefined(v);
-    this.datepicker.monthDays(v[0] || undefined);
+    this.datepicker.setOutputFormat(this.format);
+    this.datepicker.initialValue(v);
     this.datepicker.valueChanged.subscribe(va => this.dateChanged.emit(va));
   }
 

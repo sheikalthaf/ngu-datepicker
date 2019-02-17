@@ -47,4 +47,6 @@
   </div>
 </div>
 <hr />
-<ng-content></ng-content>
+<ng-container *ngIf="buttonsContent">
+  <ng-container *ngTemplateOutlet="buttonsContent; context: context"></ng-container>
+</ng-container>

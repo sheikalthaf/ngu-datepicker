@@ -1,22 +1,68 @@
-import * as momentNs from 'moment';
-const moment = momentNs;
+import * as moment from 'moment';
 import { DpTest, DPColors } from './datepicker.interface';
 import { BehaviorSubject, Observable, Subscription, Subject } from 'rxjs';
 
 const LOCAL_COMPARE = 'YYYY-MM-DD';
+
+/**
+ * this is store which help to avoid some duplicates in datepicker values
+ */
+export class NguCalendarRangeStore {
+  private store: moment.MomentInput[] = [];
+  isFull = false;
+  isSingle = false;
+
+  add(date: moment.MomentInput) {
+    const d = moment(date);
+    if (this.isFull) this.push();
+
+    if (this.isPast(d)) return false;
+
+    return this.push(date);
+    // return false;
+  }
+
+  isPast(date: moment.Moment) {
+    return this.isSingle && moment(this.store[0]).isAfter(date);
+  }
+
+  isSame(date: moment.Moment) {
+    return !!this.store.find(e => moment(e).format(LOCAL_COMPARE) === date.format(LOCAL_COMPARE));
+  }
+
+  isBefore(date: moment.MomentInput) {
+    return moment(this.store[0]).isBefore(date);
+  }
+
+  inLocalFormat() {
+    return this.store.map(e => moment(e).format(LOCAL_COMPARE));
+  }
+
+  push(data?: moment.MomentInput | moment.MomentInput[]) {
+    if (Array.isArray(data)) this.store = data;
+    else if (!data) this.store = [];
+    else this.store.push(data);
+
+    this.isFull = this.store.length === 2;
+    this.isSingle = this.store.length === 1;
+    return true;
+  }
+}
 
 export class NguCalendar {
   private _dateColors = new DPColors();
 
   private rangeStore = new NguCalendarRangeStore();
 
+  private outputFormat = '' + LOCAL_COMPARE;
+
   days = new BehaviorSubject([]);
 
   colors = new BehaviorSubject(this._dateColors);
 
-  valueChanged = new Subject();
+  valueChanged = new Subject<string | string[]>();
 
-  pickerCell$: Observable<any>;
+  pickerCell$: Observable<DpTest>;
 
   months = moment.months();
 
@@ -28,20 +74,18 @@ export class NguCalendar {
     thisWeek: () => this.chooseDate(0, 'week'),
     lastWeek: () => this.chooseDate(1, 'week'),
     lastMonth: () => this.chooseDate(1, 'month'),
-    lastYear: () => this.chooseDate(1, 'year')
+    lastYear: () => this.chooseDate(1, 'year'),
+    last: (num: number) => this.chooseDate(num, 'day', true)
   };
+
   hoverSub: Subscription;
 
-  constructor(
-    public calendarStartMonth = moment(),
-    public multi = 1,
-    public range = false
-  ) {}
+  constructor(public calendarStartMonth = moment(), public multi = 1, public range = false) {}
 
-  monthDays(date: momentNs.MomentInput) {
+  monthDays(date: moment.MomentInput) {
     const myMoment = this.moment(date);
     this.calendarStartMonth = myMoment.clone();
-    const arra = Array(this.multi)
+    const arra = Array<moment.Moment>(this.multi)
       .fill(myMoment)
       .map((d, i) => {
         const clo = d.clone().add(i, 'month');
@@ -57,9 +101,9 @@ export class NguCalendar {
     this.days.next(arra);
   }
 
-  private getWeekDays(start: momentNs.Moment): DpTest[][] {
+  private getWeekDays(start: moment.Moment): DpTest[][] {
     const startDate = start.startOf('month');
-    return Array<momentNs.Moment>(6)
+    return Array<moment.Moment>(6)
       .fill(startDate)
       .map((n, i) => {
         const week = n.clone().add(i, 'weeks');
@@ -73,9 +117,9 @@ export class NguCalendar {
       });
   }
 
-  private getWeek(day: momentNs.Moment): momentNs.Moment[] {
+  private getWeek(day: moment.Moment): moment.Moment[] {
     const sunday = day.clone().startOf('week');
-    return Array<momentNs.Moment>(7)
+    return Array<moment.Moment>(7)
       .fill(sunday)
       .map((c, i) => c.clone().add(i, 'day'));
   }
@@ -86,40 +130,48 @@ export class NguCalendar {
     this.monthDays(myMoment);
   }
 
-  colorDefined(val: momentNs.MomentInput[], noSecond = false) {
+  initialValue(data: moment.MomentInput[]) {
+    if (typeof data === 'string') data = [data];
+    const d = data.map(e => '' + e);
+    this.rangeStore.push(d);
+    this.colorDefined();
+    this.monthDays(d[0]);
+  }
+
+  private colorDefined(val = this.rangeStore.inLocalFormat(), isHovered = false) {
     const d = this.range ? val : [val[0]];
-    this._dateColors.active = [
-      ...d.map(s => this.moment(s).format(LOCAL_COMPARE))
-    ];
+    this._dateColors.active = [...d.map(s => this.moment(s).format(LOCAL_COMPARE))];
     this._dateColors.partil =
       d.length > 1
-        ? this.momentBetweenTwoDays(
-            this._dateColors.active[1],
-            this._dateColors.active[0]
-          )
+        ? this.momentBetweenTwoDays(this._dateColors.active[1], this._dateColors.active[0])
         : [];
-    noSecond && this._dateColors.active.splice(1, 1);
+    isHovered && this._dateColors.active.splice(1, 1);
     this.colors.next(this._dateColors);
   }
 
-  private momentBetweenTwoDays(
-    a: momentNs.MomentInput,
-    b: momentNs.MomentInput
-  ) {
+  private momentBetweenTwoDays(a: moment.MomentInput, b: moment.MomentInput) {
     const diff = this.moment(a).diff(this.moment(b), 'days') + 1;
-    return Array(diff)
+    return Array<moment.Moment>(diff)
       .fill(this.moment(b))
-      .map((g, i) =>
-        this.moment(g.clone().add(i, 'day')).format(LOCAL_COMPARE)
-      );
+      .map((g, i) => this.moment(g.clone().add(i, 'day')).format(LOCAL_COMPARE));
   }
 
-  chooseDate(num: number, durationType: momentNs.DurationInputArg2) {
-    const date = this.moment().subtract(num, durationType);
-    const start = date.clone().startOf(durationType);
-    const end = date.clone().endOf(durationType);
-    this.colorDefined([start, end]);
+  chooseDate(num: number, durationType: moment.DurationInputArg2, currentAsEnd = false) {
+    const now = this.moment();
+    let start: moment.MomentInput;
+    let end: moment.MomentInput;
+    if (currentAsEnd) {
+      end = now;
+      start = now.clone().subtract(num, durationType);
+    } else {
+      const date = now.clone().subtract(num, durationType);
+      start = date.clone().startOf(durationType);
+      end = date.clone().endOf(durationType);
+    }
+    this.rangeStore.push(this.range ? [start, end] : [start]);
+    this.colorDefined();
     this.monthDays(start);
+    this.patchValue();
   }
 
   selectDate(momen: DpTest) {
@@ -128,20 +180,26 @@ export class NguCalendar {
 
       d && this.rangeHover();
 
-      d && this.colorDefined(this.rangeStore.inLocalFormat());
+      d && this.colorDefined();
 
-      if (this.rangeStore.isFull)
-        this.valueChanged.next(this.rangeStore.inLocalFormat());
+      if (this.rangeStore.isFull) this.patchValue();
     } else {
-      this.valueChanged.next(this.rangeStore.inLocalFormat());
-      this.colorDefined([this.rangeStore.inLocalFormat()]);
+      this.rangeStore.push([momen.date]);
+      this.patchValue();
+      this.colorDefined();
     }
     if (!momen.isCurentMonth) this.monthDays(momen.date);
   }
 
-  onHover(date: momentNs.MomentInput) {
+  private patchValue() {
+    this.valueChanged.next(
+      this.rangeStore.inLocalFormat().map(e => moment(e).format(this.outputFormat))
+    );
+  }
+
+  onCellHover(date: moment.MomentInput) {
     const isFuture = this.rangeStore.isBefore(date);
-    const temp = [...this.rangeStore.inLocalFormat(), date];
+    const temp = [...this.rangeStore.inLocalFormat(), date] as string[];
     if (isFuture) this.colorDefined(temp, true);
   }
 
@@ -151,61 +209,22 @@ export class NguCalendar {
       this.hoverSub = null;
     } else if (!this.hoverSub) {
       this.hoverSub = this.pickerCell$.subscribe(res => {
-        this.onHover(res.date);
+        this.onCellHover(res.date);
       });
     }
   }
 
   button(type?: 'next' | 'prev') {
     this.monthDays(
-      this.calendarStartMonth
-        .add(type === 'next' ? 1 : -1, 'months')
-        .startOf('month')
+      this.calendarStartMonth.add(type === 'next' ? 1 : -1, 'months').startOf('month')
     );
   }
 
-  moment(date: momentNs.MomentInput) {
+  moment(date: moment.MomentInput) {
     return moment(date);
   }
-}
 
-export class NguCalendarRangeStore {
-  private store: momentNs.MomentInput[] = [];
-  isFull = false;
-  isSingle = false;
-
-  add(date: momentNs.MomentInput) {
-    const d = moment(date);
-    if (this.isFull) this.push();
-
-    if (this.isPast(d)) return false;
-
-    if (!this.isSame(d)) return this.push(date);
-    return false;
-  }
-
-  isPast(date: momentNs.Moment) {
-    return this.isSingle && moment(this.store[0]).isAfter(date);
-  }
-
-  isSame(date: momentNs.Moment) {
-    return !!this.store.find(
-      e => moment(e).format(LOCAL_COMPARE) === date.format(LOCAL_COMPARE)
-    );
-  }
-
-  isBefore(date: momentNs.MomentInput) {
-    return moment(this.store[0]).isBefore(date);
-  }
-
-  inLocalFormat() {
-    return this.store.map(e => moment(e).format(LOCAL_COMPARE));
-  }
-
-  private push(data?: momentNs.MomentInput) {
-    data ? this.store.push(data) : (this.store = []);
-    this.isFull = this.store.length === 2;
-    this.isSingle = this.store.length === 1;
-    return true;
+  setOutputFormat(format: string) {
+    if (format) this.outputFormat = format;
   }
 }
